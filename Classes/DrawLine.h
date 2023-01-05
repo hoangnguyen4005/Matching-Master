@@ -1,6 +1,6 @@
 //
 //  DrawLine.h
-//  One Connection
+//  MatchingMaster
 //
 //  Created by Harry Nguyen on 10/23/16.
 //

@@ -1,6 +1,6 @@
 //
 //  PopupGame.cpp
-//  One Connection
+//  MatchingMaster
 //
 //  Created by Hoang Nguyen on 11/15/16.
 //

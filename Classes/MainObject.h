@@ -1,6 +1,6 @@
 //
 //  MainObject.h
-//  One Connection
+//  MatchingMaster
 //
 //  Created by Harry Nguyen on 8/18/16.
 //
