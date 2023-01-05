@@ -1,6 +1,6 @@
 //
 //  ButtonCustom.h
-//  One Connection
+//  MatchingMaster
 //
 //  Created by Harry Nguyen on 8/18/16.
 //
@@ -20,26 +20,21 @@ public:
 
 class ButtonCustom: public Node {
 public:
-  int valueText, tagButton;
+  int tagButton;
   Sprite* buttonSprite;
   ui::Button* button;
   Label* textLabel;
   DelegateButton* mDelegate;
 public:
   
-  ButtonCustom();
+  ButtonCustom(const char* fileName);
   virtual ~ButtonCustom();
-  void createUIButton(const char* fileName);
   void setValueText(int value);
-  int getValueText();
-  void onEnter();
-  void onExit();
-  void update(float dt);
   void setTagButton(int tag);
-  int getTagButton();
   void buttonClick(Ref* pSender);
   void setDelegate(DelegateButton* delegate);
   void setDisable();
+  Size getContentSize();
 };
 
 #endif /* ButtonCustom_h */

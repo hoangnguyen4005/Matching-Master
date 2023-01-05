@@ -1,6 +1,6 @@
 //
 //  CheckPairBot.h
-//  One Connection
+//  MatchingMaster
 //
 //  Created by Harry Nguyen on 8/19/16.
 //
@@ -18,8 +18,7 @@ USING_NS_CC;
 
 class DelegateDrawer {
 public:
-  virtual void listerDrawer(int type, int typeSub, int result, const Point& p1, const Point& p2, float timeDisplayLineColor)=0;
-  virtual void listerDrawerUL(int type, int typeSub, int downAndUp, int result, const Point& p1, const Point& p2, float timeDisplayLineColor)=0;
+  virtual void drawPairConnection(int drawType, int typeCoordinator, int result, const Point& p1, const Point& p2, float timeDisplayLineColor)=0;
 };
 
 class CheckPairBot {
@@ -39,7 +38,6 @@ public:
   DelegateDrawer* delegate;
   CheckPairBot();
   virtual ~CheckPairBot();
-  static CheckPairBot* getInstance();
   void setArrayValueVisible(const std::vector<MainObject*> &array);
   void setWidthAndHeightMatrix(int width, int height);
   void setDelegate(DelegateDrawer* mDelegate);

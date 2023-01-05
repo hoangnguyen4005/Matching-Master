@@ -1,6 +1,6 @@
 //
 //  CheckPairBot.cpp
-//  One Connection
+//  MatchingMaster
 //
 //  Created by Harry Nguyen on 8/19/16.
 //
@@ -8,19 +8,10 @@
 
 #include "CheckPairBot.h"
 #include "GameDefine.h"
-#define NO_VALUE 2048
-#define VALUE 1024
-
-static CheckPairBot* suggestionBot = NULL;
 
 CheckPairBot::CheckPairBot() {}
 
 CheckPairBot::~CheckPairBot() {}
-
-CheckPairBot* CheckPairBot::getInstance() {
-  if (suggestionBot != NULL) { suggestionBot = new CheckPairBot(); }
-  return suggestionBot;
-}
 
 void CheckPairBot::setWidthAndHeightMatrix(int width, int height) {
   this->width = width;
@@ -49,10 +40,6 @@ int CheckPairBot::countNumberObjectBetween(const Point& p1, const Point& p2) {
         temp++;
       }
     }
-  } else if(p1.x == p2.x && p1.y == p2.y) {
-    return VALUE;
-  } else {
-    return NO_VALUE;
   }
   return temp;
 }
@@ -62,7 +49,7 @@ bool CheckPairBot::checkLineY(int y1, int y2, int x) {
     return false;
   } else {
     if(delegate && isDrawingLineColor) {
-      delegate->listerDrawer(LINE,Y_AXIS,x, Point(x,y1), Point(x,y2), timeDisplayLineColor);
+      delegate->drawPairConnection(LINE,Y_AXIS,x, Point(x,y1), Point(x,y2), timeDisplayLineColor);
     }
     return true;
   }
@@ -73,7 +60,7 @@ bool CheckPairBot::checkLineX(int x1, int x2, int y) {
     return false;
   } else {
     if(delegate && isDrawingLineColor) {
-      delegate->listerDrawer(LINE, X_AXIS, y, Point(x1,y), Point(x2,y), timeDisplayLineColor);
+      delegate->drawPairConnection(LINE, X_AXIS, y, Point(x1,y), Point(x2,y), timeDisplayLineColor);
     }
     return true;
   }
@@ -88,10 +75,9 @@ int CheckPairBot::checkRectY(Point p1, Point p2) {
   for (int y = pMinY.y + 1; y <= pMaxY.y; y++) {
     if((countNumberObjectBetween(Point(pMinY.x,pMinY.y), Point(pMinY.x,y)) == 1 &&
         countNumberObjectBetween(Point(pMinY.x,y), Point(pMaxY.x, y)) == 0 )&&
-       (countNumberObjectBetween(Point(pMaxY.x, y), Point(pMaxY.x, pMaxY.y)) == 1 ||
-        countNumberObjectBetween(Point(pMaxY.x, y), Point(pMaxY.x, pMaxY.y)) == VALUE)) {
+       countNumberObjectBetween(Point(pMaxY.x, y), Point(pMaxY.x, pMaxY.y)) == 1) {
       if(delegate && isDrawingLineColor) {
-        delegate->listerDrawer(Z_SHAPE, Y_AXIS, y, p1, p2, timeDisplayLineColor);
+        delegate->drawPairConnection(Z_LINE, Y_AXIS, y, p1, p2, timeDisplayLineColor);
       }
       return y;
     }
@@ -108,10 +94,9 @@ int CheckPairBot::checkRectX(Point p1, Point p2) {
   for (int x = pMinX.x + 1; x <= pMaxX.x; x++) {
     if((countNumberObjectBetween(Point(pMinX.x,pMinX.y), Point(x,pMinX.y)) == 1 &&
         countNumberObjectBetween(Point(x,pMinX.y), Point(x, pMaxX.y)) == 0) &&
-       (countNumberObjectBetween(Point(x, pMaxX.y), Point(pMaxX.x, pMaxX.y)) == 1 ||
-        countNumberObjectBetween(Point(x, pMaxX.y), Point(pMaxX.x, pMaxX.y)) == VALUE)) {
+       countNumberObjectBetween(Point(x, pMaxX.y), Point(pMaxX.x, pMaxX.y)) == 1) {
       if(delegate && isDrawingLineColor) {
-        delegate->listerDrawer(Z_SHAPE, X_AXIS, x, p1, p2, timeDisplayLineColor);
+        delegate->drawPairConnection(Z_LINE, X_AXIS, x, p1, p2, timeDisplayLineColor);
       }
       return x;
     }
@@ -136,7 +121,7 @@ int CheckPairBot::checkMoreLineX(Point p1, Point p2, int type) {
     if(countNumberObjectBetween(Point(pMinX.x, pMinX.y), Point(x, col)) == 1  &&
        countNumberObjectBetween(Point(pMaxX.x, pMaxX.y), Point(x, col)) == 1) {
       if(delegate && isDrawingLineColor) {
-        delegate->listerDrawerUL(L_SHAPE,X_AXIS, type, x ,p1, p2, timeDisplayLineColor);
+        delegate->drawPairConnection(L_LINE,X_AXIS, x ,p1, p2, timeDisplayLineColor);
       }
       return x;
     }
@@ -145,7 +130,7 @@ int CheckPairBot::checkMoreLineX(Point p1, Point p2, int type) {
            listMainObject.at(x + pMaxX.y*width)->getValueVisible() != VISIBLE_OBJECT) {
       if (countNumberObjectBetween(Point(x, pMinX.y),Point(x, pMaxX.y)) == 0) {
         if(delegate && isDrawingLineColor) {
-          delegate->listerDrawerUL(U_SHAPE, X_AXIS, type, x, p1, p2, timeDisplayLineColor);
+          delegate->drawPairConnection(U_LINE, X_AXIS, x, p1, p2, timeDisplayLineColor);
         }
         return x;
       }
@@ -173,7 +158,7 @@ int CheckPairBot::checkMoreLineY(Point p1, Point p2, int type) {
     if(countNumberObjectBetween(Point(pMinY.x, pMinY.y), Point(row, y)) == 1  &&
        countNumberObjectBetween(Point(pMaxY.x, pMaxY.y), Point(row, y)) == 1) {
       if(delegate && isDrawingLineColor) {
-        delegate->listerDrawerUL(L_SHAPE, Y_AXIS, type, y, p1, p2, timeDisplayLineColor);
+        delegate->drawPairConnection(L_LINE, Y_AXIS, y, p1, p2, timeDisplayLineColor);
       }
       return y;
     }
@@ -182,7 +167,7 @@ int CheckPairBot::checkMoreLineY(Point p1, Point p2, int type) {
            listMainObject.at(pMaxY.x + y*width)->getValueVisible() != VISIBLE_OBJECT) {
       if (countNumberObjectBetween(Point(pMinY.x,y),Point(pMaxY.x,y)) == 0) {
         if(delegate && isDrawingLineColor) {
-          delegate->listerDrawerUL(U_SHAPE, Y_AXIS, type, y, p1, p2, timeDisplayLineColor);
+          delegate->drawPairConnection(U_LINE, Y_AXIS, y, p1, p2, timeDisplayLineColor);
         }
         return y;
       }

@@ -1,6 +1,6 @@
 //
 //  DrawLine.h
-//  One Connection
+//  MatchingMaster
 //
 //  Created by Harry Nguyen on 10/23/16.
 //
@@ -15,14 +15,12 @@
 USING_NS_CC;
 
 class DrawLine: public Ref {
-public:
-  Scene* mainScene;
-  
-public:
+private:
   DrawLine();
+public:
+  static DrawLine* getInstance();
   virtual ~DrawLine();
-  void drawLineTwoPoint(const Point& p1, const Point& p2, float timeDisplayLineColor);
-  void initWithScene(Node* node);
+  void drawLineTwoPoint(Node* node, const Point& p1, const Point& p2, float timeDisplayLineColor);
 };
 
 #endif /* DrawLine_h */

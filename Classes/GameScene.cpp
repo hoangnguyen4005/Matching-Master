@@ -1,5 +1,5 @@
 
-//  One Connection
+//  MatchingMaster
 //
 //  Created by Harry Nguyen on 8/18/16.
 //
@@ -25,50 +25,29 @@ bool GameScene::init() {
   if (!Layer::init()) { return false; }
   countSuggest = 3;
   countRefresh = 3;
-  isShowingPopup = false;
   isPausing = false;
   
   countTouch = 0;
   winSize = Director::getInstance()->getWinSize();
-  auto sprite = Sprite::create("bgGameScene.png");
-  sprite->setPosition(Vec2(winSize.width/2, winSize.height/2));
-  this->addChild(sprite);
+  auto background = Sprite::create("bgGameScene.png");
+  background->setPosition(Vec2(winSize.width/2, winSize.height/2));
+  this->addChild(background);
   
   level = UserDefault::getInstance()->getIntegerForKey("highestLevel", 1);
-  this->createProgressBarGameScene(level);
-  widthMatrixGameBoard = MAX_WIDTH;
-  heightMatrixGameBoard = MAX_HEIGHT;
-  
-  RandomBot* randomBot = RandomBot::getInstance();
-  this->randomLevelPlay(level, randomBot);
-  
-  if(level == 1) {
-    dropObjectType = DROP_IDLE;
-  } else {
-    srand((unsigned)time(NULL));
-    dropObjectType = rand() % 4;
-  }
-  
-  randomBot->setWithHeightMatrix(widthMatrixGameBoard-2, heightMatrixGameBoard-2);
-  randomBot->createVectorRandomIndex();
-  
-  gameBoard = new GameBoard(widthMatrixGameBoard,heightMatrixGameBoard);
-  gameBoard->initWithScene(this);
-  Vec2 pos = gameBoard->convertToWorldSpace(Vec2((winSize.width/2 - widthMatrixGameBoard/2*SHAPE_WIDTH - SHAPE_WIDTH/6)*widthMatrixGameBoard/MAX_WIDTH, -SHAPE_HEIGHT*0.6));
-  gameBoard->setObjectTypes(randomBot->getExpectedVector());
-  gameBoard->setPosition(pos);
-  gameBoard->createGameBoard();
-  
-  this->createLeftLayout();
-  this->createRightLayout();
-  
+  gameBoard = new GameBoard(TOTAL_ROW,TOTAL_COLUMN, RandomIndex::getInstance()->getDropObjectType(level));
+  gameBoard->setPosition(Vec2((winSize.width - gameBoard->getRealContentSize().width)/2.0, -SHAPE_HEIGHT + SHAPE_HEIGHT/2.0 + THICKNESS_DRAW_LINE));
+  gameBoard->createGameBoard(level);
+
   checkPairBot = new CheckPairBot();
-  checkPairBot->setWidthAndHeightMatrix(widthMatrixGameBoard, heightMatrixGameBoard);
+  checkPairBot->setWidthAndHeightMatrix(TOTAL_ROW, TOTAL_COLUMN);
   checkPairBot->setArrayValueVisible(gameBoard->getArrayValueObject());
   checkPairBot->setDelegate(this);
   
   gameBoard->setSuggestBotForGame(checkPairBot);
+  gameBoard->findPairConnectionObject(false, 0.0);
+  this->addChild(gameBoard, TAG_GAME_BOARD);
   
+  this->createHeaderGameScene(level);
   this->createLayerStartGame();
   
   auto touch = EventListenerTouchOneByOne::create();
@@ -84,13 +63,13 @@ bool GameScene::init() {
 bool GameScene::onTouchBeginGameScene(Touch* mtouch, Event* pEvent) {
   if(gameBoard && !isPausing) {
     if(countTouch < 2) {
-      Vec2 pos = gameBoard->convertPosGameBoard(mtouch->getLocation());
-      if(pos.x >= 1 && pos.x <= widthMatrixGameBoard-2 && pos.y >=1 && pos.y <= heightMatrixGameBoard-2) {
+      Vec2 pos = gameBoard->convertMatrixGameBoard(mtouch->getLocation());
+      if(pos.x >= 1 && pos.x <= TOTAL_ROW-2 && pos.y >=1 && pos.y <= TOTAL_COLUMN-2) {
         if(gameBoard->getAtPosGameBoard(pos)->getValueVisible() != HIDDEN_OBJECT) {
           if (pos.x == posTouchOne.x && pos.y == posTouchOne.y && countTouch == 1) {
             MainObject* object = gameBoard->getAtPosGameBoard(pos);
             object->backToNormalObject();
-            posTouchOne = Vec2(-1,-1);
+            posTouchOne = OUT_OF_GAME_BOARD_MATRIX;
             countTouch = 0;
           } else {
             countTouch ++;
@@ -108,9 +87,8 @@ bool GameScene::onTouchBeginGameScene(Touch* mtouch, Event* pEvent) {
 
 void GameScene::onTouchEndGameScene(Touch* mTouch, Event* pEvent) {
   if(countTouch == 2 && !isPausing) {
-    posTouchTwo = gameBoard->convertPosGameBoard(mTouch->getLocation());
-    if(posTouchTwo.x >= 0 && posTouchTwo.x <= widthMatrixGameBoard-1 && posTouchTwo.y >=0 && posTouchTwo.y <= heightMatrixGameBoard-1) {
-      
+    posTouchTwo = gameBoard->convertMatrixGameBoard(mTouch->getLocation());
+    if(posTouchTwo.x >= 1 && posTouchTwo.x <= TOTAL_ROW-2 && posTouchTwo.y >=1 && posTouchTwo.y <= TOTAL_COLUMN-2) {
       MyLine lineGame = checkPairBot->checkTwoPoint(posTouchOne, posTouchTwo, true, TIME_DELAY_DRAW_LINE);
       MainObject* object1 = gameBoard->getAtPosGameBoard(posTouchOne);
       MainObject* object2 = gameBoard->getAtPosGameBoard(posTouchTwo);
@@ -119,19 +97,19 @@ void GameScene::onTouchEndGameScene(Touch* mTouch, Event* pEvent) {
         object2->backToNormalObject();
       } else {
         if(object1->getTypeObject() == object2->getTypeObject()) {
-          
           this->scheduleOnce([=](float dt){
             object1->effectWhenDieObject();
             object2->effectWhenDieObject();
-            progressBar->setStatus(ADDITION_TIME_PROGRESS);
-            
             gameBoard->setHiddenObjects(posTouchOne, posTouchTwo);
-            gameBoard->setDropTypeObject(dropObjectType);
+            gameBoard->dropObjectInGameBoard();
             checkPairBot->setArrayValueVisible(gameBoard->getArrayValueObject());
-            gameBoard->findPairObject(false, 0.0);
-      
+            if(gameBoard->getCurrentListVisibleObject().empty()) {
+              isPausing = true;
+              this->createPopUpWin();
+            } else {
+              gameBoard->findPairConnectionObject(false, 0.0);
+            }
           }, TIME_DELAY_DRAW_LINE, "drop_object");
-          
         } else {
           object1->backToNormalObject();
           object2->backToNormalObject();
@@ -142,83 +120,19 @@ void GameScene::onTouchEndGameScene(Touch* mTouch, Event* pEvent) {
   }
 }
 
-void GameScene::listerDrawer(int type, int typeSub, int result, const Point& p1, const Point& p2, float timeDisplayLineColor) {
-  if(gameBoard == NULL) { return; }
-  MainObject* object1 = gameBoard->getAtPosGameBoard(p1);
-  MainObject* object2 = gameBoard->getAtPosGameBoard(p2);
-  if(object1->getTypeObject() == object2->getTypeObject()) {
-    if (type == LINE) {
-      Point pos1 = gameBoard->getPositionScene(Vec2(p1.x, p1.y));
-      Point pos2 = gameBoard->getPositionScene(Vec2(p2.x, p2.y));
-      DrawLine* drawLine = new DrawLine();
-      drawLine->initWithScene(this);
-      drawLine->drawLineTwoPoint(pos1,pos2, timeDisplayLineColor);
-    }
-    if (type == Z_SHAPE) {
-      if(typeSub == X_AXIS) {
-        Point pos1 = gameBoard->getPositionScene(Vec2(p1.x, p1.y));
-        Point pos2 = gameBoard->getPositionScene(Vec2(result, p1.y));
-        Point pos3 = gameBoard->getPositionScene(Vec2(result, p2.y));
-        Point pos4 = gameBoard->getPositionScene(Vec2(p2.x, p2.y));
-        this->drawerLine(pos1, pos2, pos3, pos4, timeDisplayLineColor);
-      } else{
-        Point pos1 = gameBoard->getPositionScene(Vec2(p1.x, p1.y));
-        Point pos2 = gameBoard->getPositionScene(Vec2(p1.x, result));
-        Point pos3 = gameBoard->getPositionScene(Vec2(p2.x, result));
-        Point pos4 = gameBoard->getPositionScene(Vec2(p2.x, p2.y));
-        this->drawerLine(pos1, pos2, pos3, pos4, timeDisplayLineColor);
-      }
-    }
-  }
-}
-
-void GameScene::listerDrawerUL(int type, int typeSub, int downAndUp, int result, const Point& p1, const Point& p2, float timeDisplayLineColor) {
-  if(gameBoard == NULL) { return; }
-  MainObject* object1 = gameBoard->getAtPosGameBoard(p1);
-  MainObject* object2 = gameBoard->getAtPosGameBoard(p2);
-  if(object1->getTypeObject() == object2->getTypeObject()) {
-    if (type == U_SHAPE) {
-      if(typeSub == X_AXIS) {
-        Point pos1 = gameBoard->getPositionScene(Vec2(p1.x, p1.y));
-        Point pos2 = gameBoard->getPositionScene(Vec2(result, p1.y));
-        Point pos3 = gameBoard->getPositionScene(Vec2(result, p2.y));
-        Point pos4 = gameBoard->getPositionScene(Vec2(p2.x, p2.y));
-        Point temp2 =  Point(pos2.x - BUFFER_DRAW_X* downAndUp, pos2.y);
-        Point temp3 =  Point(pos3.x - BUFFER_DRAW_X* downAndUp, pos3.y);
-        this->drawerLine(pos1, temp2, temp3, pos4, timeDisplayLineColor);
-      }
-      if(typeSub == Y_AXIS) {
-        Point pos1 = gameBoard->getPositionScene(Vec2(p1.x, p1.y));
-        Point pos2 = gameBoard->getPositionScene(Vec2(p1.x, result));
-        Point pos3 = gameBoard->getPositionScene(Vec2(p2.x, result));
-        Point pos4 = gameBoard->getPositionScene(Vec2(p2.x, p2.y));
-        Point temp2 =  Point(pos2.x, pos2.y - BUFFER_DRAW_Y*downAndUp);
-        Point temp3 = Point(pos3.x, pos3.y - BUFFER_DRAW_Y*downAndUp);
-        this->drawerLine(pos1, temp2, temp3, pos4, timeDisplayLineColor);
-      }
-    }
-    if(type == L_SHAPE) {
-      if(typeSub == X_AXIS) {
-        Point pos1 = gameBoard->getPositionScene(Vec2(p1.x, p1.y));
-        Point pos2 = gameBoard->getPositionScene(Vec2(result, p1.y));
-        Point pos3 = gameBoard->getPositionScene(Vec2(result, p2.y));
-        Point pos4 = gameBoard->getPositionScene(Vec2(p2.x, p2.y));
-        this->drawerLine(pos1, pos2, pos3, pos4, timeDisplayLineColor);
-      }
-      if(typeSub == Y_AXIS) {
-        Point pos1 = gameBoard->getPositionScene(Vec2(p1.x, p1.y));
-        Point pos2 = gameBoard->getPositionScene(Vec2(p1.x, result));
-        Point pos3 = gameBoard->getPositionScene(Vec2(p2.x, result));
-        Point pos4 = gameBoard->getPositionScene(Vec2(p2.x, p2.y));
-        this->drawerLine(pos1, pos2, pos3, pos4, timeDisplayLineColor);
-      }
-    }
-  }
-}
-
-void GameScene::createLeftLayout() {
+void GameScene::createHeaderGameScene(int level) {
+  float topGameBoard = gameBoard->getPositionY() + gameBoard->getRealContentSize().height - 32.0;
+  progressBar = new ProgressBarCustom();
+  progressBar->setPosition(Vec2(winSize.width/2, topGameBoard));
+  progressBar->createUIProgressBar();
+  progressBar->setDelegate(this);
+  this->addChild(progressBar);
+  
   ui::Button* backButton = ui::Button::create("backButton.png","","",ui::Widget::TextureResType::LOCAL);
-  backButton->setPosition(Vec2(backButton->getContentSize().width * 1.5, loadingSprite->getPositionY()));
+  backButton->setPosition(Vec2(gameBoard->getPositionX()
+                               + SHAPE_WIDTH/2.0
+                               + backButton->getContentSize().width,
+                               progressBar->getPositionY()));
   backButton->setTag(TAG_BTN_BACK);
   backButton->addClickEventListener(CC_CALLBACK_1(GameScene::handleClickButton,this));
   this->addChild(backButton);
@@ -230,62 +144,52 @@ void GameScene::createLeftLayout() {
   levelLabel->setPosition(Vec2(backButton->getPositionX() + backButton->getContentSize().width/2.0 + 64.0,
                                backButton->getPositionY()));
   this->addChild(levelLabel);
-}
-
-void GameScene::createRightLayout() {
-  refreshButton = new ButtonCustom();
-  refreshButton->setPosition(Vec2(loadingSprite->getPositionX() + loadingSprite->getContentSize().width * 0.84,
-                                  loadingSprite->getPositionY()));
+  
+  pauseButton = new ButtonCustom("pauseButton.png");
+  pauseButton->setTagButton(TAG_BTN_PAUSE);
+  pauseButton->setValueText(0);
+  pauseButton->setPosition(Vec2(gameBoard->getPositionX() + gameBoard->getRealContentSize().width - SHAPE_WIDTH
+                                - pauseButton->getContentSize().width/2,
+                                progressBar->getPositionY()));
+  pauseButton->setDelegate(this);
+  this->addChild(pauseButton);
+  
+  refreshButton = new ButtonCustom("refreshButton.png");
+  refreshButton->setPosition(Vec2(pauseButton->getPositionX()
+                                  - pauseButton->getContentSize().width/2.0
+                                  - refreshButton->getContentSize().width,
+                                  pauseButton->getPositionY()));
   refreshButton->setValueText(countRefresh);
   refreshButton->setTagButton(TAG_BTN_REFRESH);
-  refreshButton->createUIButton("refreshButton.png");
   refreshButton->setDelegate(this);
   this->addChild(refreshButton);
   
-  suggestButton = new ButtonCustom();
+  suggestButton = new ButtonCustom("suggestButton.png");
   suggestButton->setTagButton(TAG_BTN_SUGGEST);
   suggestButton->setValueText(countSuggest);
-  suggestButton->createUIButton("suggestButton.png");
-  suggestButton->setPosition(Vec2(refreshButton->getPositionX() + 138.0*1.3,refreshButton->getPositionY()));
+  suggestButton->setPosition(Vec2(refreshButton->getPositionX()
+                                  - refreshButton->getContentSize().width/2.0
+                                  - suggestButton->getContentSize().width,
+                                  pauseButton->getPositionY()));
   suggestButton->setDelegate(this);
   this->addChild(suggestButton);
-  
-  pauseButton = new ButtonCustom();
-  pauseButton->setTagButton(TAG_BTN_PAUSE);
-  pauseButton->setValueText(0);
-  pauseButton->createUIButton("pauseButton.png");
-  pauseButton->setPosition(Vec2(suggestButton->getPositionX() + 138.0*1.3,refreshButton->getPositionY()));
-  pauseButton->setDelegate(this);
-  this->addChild(pauseButton);
-}
-
-void GameScene::createProgressBarGameScene(int level) {
-  loadingSprite = Sprite::create("background_progress_bar.png");
-  loadingSprite->setPosition(Vec2(winSize.width*0.52, winSize.height - loadingSprite->getContentSize().height));
-  this->addChild(loadingSprite);
-  
-  progressBar = ProgressBarCustom::getInstanceProgress(100.0f, IDLE_PROGRESS);
-  progressBar->createUIProgressBar(loadingSprite->getPosition());
-  progressBar->setTimeUpdate(TIME_UPDATE_PROGRESS_BAR);
-  progressBar->setDelegate(this);
-  this->addChild(progressBar);
 }
 
 void GameScene::endTime() {
-  if(isShowingPopup == false) {
-    isShowingPopup = true;
-    this->createPopupGameOver();
+  this->createPopupGameOver();
+}
+
+void GameScene::receiveTimeRemainingFromProgressBar(int timeRemaining) {
+  if(timeRemaining == TOTAL_TIME_SECOND_PROGRESS_BAR/2 + AD_DURATION) {
+    AdmobManager::getInstance()->showBanner();
+  } else if(timeRemaining == TOTAL_TIME_SECOND_PROGRESS_BAR/2) {
+    AdmobManager::getInstance()->hideBanner();
   }
 }
 
 void GameScene::update(float dt) {
-  if(gameBoard && gameBoard->isWinGameBoard() == false) {
-    gameBoard->update(dt);
-  }
-  if(gameBoard->isWinGameBoard() == true && isShowingPopup == false) {
-    isShowingPopup = true;
-    this->createPopUpWin();
-  }
+  if(isPausing) { return; }
+  gameBoard->update(dt);
 }
 
 
@@ -295,7 +199,7 @@ void GameScene::handleClickEventOnPopUp(int tag) {
       if (this->getChildByTag(TAG_POP_UP_PAUSE)) {
         this->removeChildByTag(TAG_POP_UP_PAUSE);
         isPausing = false;
-        progressBar->setStatus(IDLE_PROGRESS);
+        progressBar->setStatus(RUNNING);
         gameBoard->playGameBoard();
       }
       AdmobManager::getInstance()->hideBanner();
@@ -310,7 +214,7 @@ void GameScene::handleClickEventOnPopUp(int tag) {
       if (this->getChildByTag(TAG_POP_UP_BACK)) {
         this->removeChildByTag(TAG_POP_UP_BACK);
         isPausing = false;
-        progressBar->setStatus(IDLE_PROGRESS);
+        progressBar->setStatus(RUNNING);
         gameBoard->playGameBoard();
       }
       AdmobManager::getInstance()->hideBanner();
@@ -346,14 +250,14 @@ void GameScene::sendEventClickButton(int tag) {
     case TAG_BTN_SUGGEST:
       if(countSuggest > 0) {
         countSuggest--;
-        gameBoard->findPairObject(true, TIME_DELAY_DRAW_SUGGEST_LINE);
+        gameBoard->findPairConnectionObject(true, TIME_DELAY_DRAW_SUGGEST_LINE);
       }
       if(countSuggest <= 0 ) { suggestButton->setDisable(); }
       suggestButton->setValueText(countSuggest);
       break;
     case TAG_BTN_PAUSE:
       isPausing = true;
-      progressBar->setStatus(PAUSE_PROGRESS);
+      progressBar->setStatus(PAUSE);
       gameBoard->pauseGameBoard();
       createPopUpPause();
       break;
@@ -365,7 +269,7 @@ void GameScene::handleClickButton(Ref* pSender) {
   int tag = ((ui::Button*)pSender)->getTag();
   switch (tag) {
     case TAG_BTN_BACK:
-      progressBar->setStatus(PAUSE_PROGRESS);
+      progressBar->setStatus(PAUSE);
       gameBoard->pauseGameBoard();
       isPausing = true;
       createPopupBack();
@@ -375,39 +279,11 @@ void GameScene::handleClickButton(Ref* pSender) {
   }
 }
 
-void GameScene::drawerLine(const Point& p1,const Point& p2, const Point& p3, const Point& p4, float timeDisplayLineColor) {
-  DrawLine* drawLine = new DrawLine();
-  drawLine->initWithScene(this);
-  drawLine->drawLineTwoPoint(p1,p2, timeDisplayLineColor);
-  
-  DrawLine* drawLine2 = new DrawLine();
-  drawLine2->initWithScene(this);
-  drawLine2->drawLineTwoPoint(p2,p3, timeDisplayLineColor);
-  
-  DrawLine* drawLine3 = new DrawLine();
-  drawLine3->initWithScene(this);
-  drawLine3->drawLineTwoPoint(p3,p4, timeDisplayLineColor);
-}
-
-void GameScene::randomLevelPlay(int level, RandomBot* randomBot) {
-  if (level == 1) {
-    randomBot->createIndexes(3, 6);
-  } else if(level == 2) {
-    randomBot->createIndexes(4, 5);
-  } else if(level >= 3 && level < 5) {
-    randomBot->createIndexes(4, 6);
-  } else if(level >= 5 && level < 7) {
-    randomBot->createIndexes(5, 6);
-  } else {
-    randomBot->createIndexes(6, 6);
-  }
-}
-
 void GameScene::createLayerStartGame() {
   AdmobManager::getInstance()->showBanner();
   isPausing = true;
   gameBoard->pauseGameBoard();
-  progressBar->setStatus(PAUSE_PROGRESS);
+  progressBar->setStatus(PAUSE);
   LayerColor* startLayerColor = LayerColor::create(BG_POP_UP_COLOR, winSize.width, winSize.height);
   startLayerColor->setPosition(Vec2::ZERO);
   startLayerColor->setTag(TAG_LAYER_START_GAME);
@@ -430,14 +306,14 @@ bool GameScene::onTouchStartGame(Touch* mTouch, Event* pEvent) {
   this->scheduleOnce([=](float dt){
     AdmobManager::getInstance()->hideBanner();
     isPausing = false;
-    progressBar->setStatus(IDLE_PROGRESS);
+    progressBar->setStatus(RUNNING);
   }, 0.4f, "StartGame");
   return true;
 }
 
 void GameScene::createPopupBack() {
   AdmobManager::getInstance()->showBanner();
-  progressBar->setStatus(PAUSE_PROGRESS);
+  progressBar->setStatus(PAUSE);
   Sprite* tempButtonSize = Sprite::create("yesButton.png");
   PopupGame* popupBack = new PopupGame();
   popupBack->setDelegate(this);
@@ -452,7 +328,7 @@ void GameScene::createPopupBack() {
 
 void GameScene::createPopUpWin() {
   AdmobManager::getInstance()->showBanner();
-  progressBar->setStatus(PAUSE_PROGRESS);
+  progressBar->setStatus(PAUSE);
   PopupGame* popupWin = new PopupGame();
   popupWin->setDelegate(this);
   popupWin->setPosition(Vec2::ZERO);
@@ -469,7 +345,7 @@ void GameScene::createPopUpWin() {
 
 void GameScene::createPopupGameOver() {
   AdmobManager::getInstance()->showBanner();
-  progressBar->setStatus(PAUSE_PROGRESS);
+  progressBar->setStatus(PAUSE);
   Sprite* temp = Sprite::create("gotoHomeButton.png");
   PopupGame* popupGameOver = new PopupGame();
   popupGameOver->setDelegate(this);
@@ -483,7 +359,7 @@ void GameScene::createPopupGameOver() {
 
 void GameScene::createPopUpPause() {
   AdmobManager::getInstance()->showBanner();
-  progressBar->setStatus(PAUSE_PROGRESS);
+  progressBar->setStatus(PAUSE);
   Sprite* temp = Sprite::create("gotoHomeButton.png");
   PopupGame* popupPause = new PopupGame();
   popupPause->setDelegate(this);
@@ -504,4 +380,74 @@ void GameScene::showFullScreenAdvertisement(const char* key, int frequency) {
   } else {
     UserDefault::getInstance()->setIntegerForKey(key, currentCount + 1);
   }
+}
+
+void GameScene::drawPairConnection(int drawType, int typeCoordinator, int result, const Point& p1, const Point& p2, float timeDisplayLineColor) {
+  if(gameBoard == NULL) { return; }
+  MainObject* object1 = gameBoard->getAtPosGameBoard(p1);
+  MainObject* object2 = gameBoard->getAtPosGameBoard(p2);
+  if(object1->getTypeObject() == object2->getTypeObject()) {
+    
+    if(drawType == LINE) {
+      Point pos1 = gameBoard->convertDrawLinePosition(Vec2(p1.x, p1.y));
+      Point pos2 = gameBoard->convertDrawLinePosition(Vec2(p2.x, p2.y));
+      DrawLine::getInstance()->drawLineTwoPoint(gameBoard, pos1, pos2, timeDisplayLineColor);
+    } else {
+      switch (drawType) {
+        case Z_LINE:
+          if(typeCoordinator == X_AXIS) {
+            Point pos1 = gameBoard->convertDrawLinePosition(Vec2(p1.x, p1.y));
+            Point pos2 = gameBoard->convertDrawLinePosition(Vec2(result, p1.y));
+            Point pos3 = gameBoard->convertDrawLinePosition(Vec2(result, p2.y));
+            Point pos4 = gameBoard->convertDrawLinePosition(Vec2(p2.x, p2.y));
+            this->drawerLine(pos1, pos2, pos3, pos4, timeDisplayLineColor);
+          } else{
+            Point pos1 = gameBoard->convertDrawLinePosition(Vec2(p1.x, p1.y));
+            Point pos2 = gameBoard->convertDrawLinePosition(Vec2(p1.x, result));
+            Point pos3 = gameBoard->convertDrawLinePosition(Vec2(p2.x, result));
+            Point pos4 = gameBoard->convertDrawLinePosition(Vec2(p2.x, p2.y));
+            this->drawerLine(pos1, pos2, pos3, pos4, timeDisplayLineColor);
+          }
+          break;
+        case U_LINE:
+          if(typeCoordinator == X_AXIS) {
+            Point pos1 = gameBoard->convertDrawLinePosition(Vec2(p1.x, p1.y));
+            Point pos2 = gameBoard->convertDrawLinePosition(Vec2(result, p1.y));
+            Point pos3 = gameBoard->convertDrawLinePosition(Vec2(result, p2.y));
+            Point pos4 = gameBoard->convertDrawLinePosition(Vec2(p2.x, p2.y));
+            this->drawerLine(pos1, pos2, pos3, pos4, timeDisplayLineColor);
+          }
+          if(typeCoordinator == Y_AXIS) {
+            Point pos1 = gameBoard->convertDrawLinePosition(Vec2(p1.x, p1.y));
+            Point pos2 = gameBoard->convertDrawLinePosition(Vec2(p1.x, result));
+            Point pos3 = gameBoard->convertDrawLinePosition(Vec2(p2.x, result));
+            Point pos4 = gameBoard->convertDrawLinePosition(Vec2(p2.x, p2.y));
+            this->drawerLine(pos1, pos2, pos3, pos4, timeDisplayLineColor);
+          }
+          break;
+        case L_LINE:
+          if(typeCoordinator == X_AXIS) {
+            Point pos1 = gameBoard->convertDrawLinePosition(Vec2(p1.x, p1.y));
+            Point pos2 = gameBoard->convertDrawLinePosition(Vec2(result, p1.y));
+            Point pos3 = gameBoard->convertDrawLinePosition(Vec2(result, p2.y));
+            Point pos4 = gameBoard->convertDrawLinePosition(Vec2(p2.x, p2.y));
+            this->drawerLine(pos1, pos2, pos3, pos4, timeDisplayLineColor);
+          }
+          if(typeCoordinator == Y_AXIS) {
+            Point pos1 = gameBoard->convertDrawLinePosition(Vec2(p1.x, p1.y));
+            Point pos2 = gameBoard->convertDrawLinePosition(Vec2(p1.x, result));
+            Point pos3 = gameBoard->convertDrawLinePosition(Vec2(p2.x, result));
+            Point pos4 = gameBoard->convertDrawLinePosition(Vec2(p2.x, p2.y));
+            this->drawerLine(pos1, pos2, pos3, pos4, timeDisplayLineColor);
+          }
+        default: break;
+      }
+    }
+  }
+}
+
+void GameScene::drawerLine(const Point& p1,const Point& p2, const Point& p3, const Point& p4, float timeDisplayLineColor) {
+  DrawLine::getInstance()->drawLineTwoPoint(gameBoard, p1, p2, timeDisplayLineColor);
+  DrawLine::getInstance()->drawLineTwoPoint(gameBoard, p2, p3, timeDisplayLineColor);
+  DrawLine::getInstance()->drawLineTwoPoint(gameBoard, p3, p4, timeDisplayLineColor);
 }

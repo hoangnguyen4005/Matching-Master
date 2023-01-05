@@ -1,5 +1,5 @@
 
-//  One Connection
+//  MatchingMaster
 //
 //  Created by Harry Nguyen on 8/18/16.
 //
@@ -14,15 +14,14 @@
 #include "CheckPairBot.h"
 #include "PopupGame.h"
 #include "ButtonCustom.h"
-#include "RandomBot.h"
+#include "RandomIndex.h"
 USING_NS_CC;
 
 class GameScene : public cocos2d::Layer, DelegateButton, DelegateDrawer, DelegateProgress, DelegateEventPopup {
 public:
-  bool isPausing, isShowingPopup;
-  int level, dropObjectType;
+  bool isPausing;
+  int level;
   int countRefresh, countSuggest, countTouch;
-  int widthMatrixGameBoard, heightMatrixGameBoard;
   Size winSize;
   Vec2 posTouchOne, posTouchTwo;
   Label* levelLabel;
@@ -30,14 +29,11 @@ public:
   CheckPairBot* checkPairBot;
   ProgressBarCustom* progressBar;
   ButtonCustom *suggestButton, *refreshButton, *pauseButton;
-  Sprite* loadingSprite;
 public:
   static cocos2d::Scene* createSceneGameScene();
   virtual bool init();
   CREATE_FUNC(GameScene);
-  void createProgressBarGameScene(int level);
-  void createRightLayout();
-  void createLeftLayout();
+  void createHeaderGameScene(int level);
   void sendEventClickButton(int tag);
   void handleClickButton(Ref* pSender);
   void update(float dt);
@@ -46,9 +42,9 @@ public:
   void onTouchEndGameScene(Touch* mTouch, Event* pEvent);
   
   virtual void endTime();
+  virtual void receiveTimeRemainingFromProgressBar(int timeRemaining);
   
-  virtual void listerDrawer(int type, int typeSub, int result, const Point& p1, const Point& p2, float timeDisplayLineColor);
-  virtual void listerDrawerUL(int type, int typeSub, int downAndUp, int result, const Point& p1, const Point& p2, float timeDisplayLineColor);
+  virtual void drawPairConnection(int drawType, int typeCoordinator, int result, const Point& p1, const Point& p2, float timeDisplayLineColor);
   void drawerLine(const Point& p1,const Point& p2, const Point& p3, const Point& p4, float timeDisplayLineColor);
 
   virtual void handleClickEventOnPopUp(int tag);
@@ -57,9 +53,7 @@ public:
   void createPopUpWin();
   void createPopupGameOver();
   void createPopUpPause();
-  void createLayerStartGame();
-  
-  void randomLevelPlay(int level , RandomBot* randomBot);
+  void createLayerStartGame();  
   void showFullScreenAdvertisement(const char* key, int frequency);
 };
 

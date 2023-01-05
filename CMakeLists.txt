@@ -61,7 +61,7 @@ list(APPEND GAME_SOURCE
      Classes/MyLine.cpp
      Classes/PopupGame.cpp
      Classes/ProgressBarCustom.cpp
-     Classes/RandomBot.cpp
+     Classes/RandomIndex.cpp
      Classes/AdmobManager.cpp
      )
 list(APPEND GAME_HEADER
@@ -79,7 +79,7 @@ list(APPEND GAME_HEADER
      Classes/MyLine.h
      Classes/PopupGame.h
      Classes/ProgressBarCustom.h
-     Classes/RandomBot.h
+     Classes/RandomIndex.h
      Classes/AdmobManager.h
      )
 
