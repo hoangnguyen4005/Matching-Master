@@ -213,106 +213,99 @@ void GameBoard::swapTwoObject(const Vec2& pos1, const Vec2& pos2) {
   }
 }
 
-/*auto change type when do not have pair */
-void GameBoard::findPairObject(bool isDrawingLineColor, float timeDisplayLineColor) {
+void GameBoard::findPairSuggestionObject(bool isDrawingLineColor, float timeDisplayLineColor) {
   std::vector<MainObject*> listVisibleObject;
-  std::vector<MainObject*> arraySampleValue;
-  if(!listVisibleObject.empty()) {
-    listVisibleObject.clear();
-  }
+  std::vector<MainObject*> listObjectSameType;
   
   for (int i = 0; i < listObjects.size(); i++) {
     if(listObjects.at(i)->getValueVisible() == VISIBLE_OBJECT) {
       listVisibleObject.push_back(listObjects.at(i));
     }
   }
-  std::vector<MainObject*> listVisibleObject_Clone = listVisibleObject;
+
+  if(listVisibleObject.empty()) { return; }
+  
+  std::vector<MainObject*> listVisibleObjectClone = listVisibleObject;
   
   for (int j = 0; j < listVisibleObject.size(); j ++) {
-    int type1 = listVisibleObject.at(j)->getTypeObject();
-    for (int  k = 0; k < listVisibleObject_Clone.size(); k++) {
-      int type2 = listVisibleObject_Clone.at(k)->getTypeObject();
-      if(type1 == type2) {
-        arraySampleValue.push_back(listVisibleObject_Clone.at(k));
-        listVisibleObject_Clone.erase(listVisibleObject_Clone.begin() + k);
+    for (int  k = 0; k < listVisibleObjectClone.size(); k++) {
+      if(listVisibleObject.at(j)->getTypeObject() == listVisibleObjectClone.at(k)->getTypeObject()) {
+        listObjectSameType.push_back(listVisibleObjectClone.at(k));
+        listVisibleObjectClone.erase(listVisibleObjectClone.begin() + k);
         k--;
       }
     }
   }
   
-  std::vector<MainObject*> arraySampleValue_Clone = arraySampleValue;
-  std::vector<Vec2> subPositionArraySamType;
+  std::vector<Vec2> listMatrixOfObjectSameType;
   
-  bool isNeededShuffle = false;
+  bool hasPairObject = false;
   bool isLastArray = false;
-  for (int  h = 0; h < arraySampleValue.size();) {
-    int value = arraySampleValue.at(h)->getTypeObject();
+  for (int  h = 0; h < listObjectSameType.size();) {
+    int value = listObjectSameType.at(h)->getTypeObject();
     int count = 0;
-    for (int m = h; h < arraySampleValue_Clone.size(); m++) {
-      if (m >= arraySampleValue_Clone.size()) {
-        if(!subPositionArraySamType.empty()) {
+    for (int m = h; h < listObjectSameType.size(); m++) {
+      if (m >= listObjectSameType.size()) {
+        if(!listMatrixOfObjectSameType.empty()) {
           int countLast = 0;
-          for (int delta = 0; delta < subPositionArraySamType.size()-1; delta++) {
+          for (int delta = 0; delta < listMatrixOfObjectSameType.size()-1; delta++) {
             countLast++;
-            if(checkCanConnectWithPairPosition(subPositionArraySamType.at(delta), subPositionArraySamType.at(delta+1), isDrawingLineColor, timeDisplayLineColor)) {
-              isNeededShuffle = true;
+            if(checkCanConnectWithPairPosition(listMatrixOfObjectSameType.at(delta),
+                                               listMatrixOfObjectSameType.at(delta+1),
+                                               isDrawingLineColor,
+                                               timeDisplayLineColor)) {
+              hasPairObject = true;
               break;
             }
           }
-          if(countLast == subPositionArraySamType.size() - 1 && !isNeededShuffle) {
+          if(countLast == listMatrixOfObjectSameType.size() - 1 && !hasPairObject) {
             isLastArray = true;
-            subPositionArraySamType.clear();
+            listMatrixOfObjectSameType.clear();
             break;
           }
-          if(isNeededShuffle == true) {
-            subPositionArraySamType.clear();
+          if(hasPairObject == true) {
+            listMatrixOfObjectSameType.clear();
             break;
           }
         }
       } else {
-        if(arraySampleValue_Clone.at(m)->getTypeObject() != value) {
-          
+        if(listObjectSameType.at(m)->getTypeObject() != value) {
           h = h + count;
-          if (!subPositionArraySamType.empty()) {
+          if (!listMatrixOfObjectSameType.empty()) {
             int xCount = 0 ;
-            for (int  x = 0 ; x < subPositionArraySamType.size()-1; x++) {
+            for (int x = 0; x < listMatrixOfObjectSameType.size()-1; x++) {
               xCount ++;
-              if(checkCanConnectWithPairPosition(subPositionArraySamType.at(x), subPositionArraySamType.at(x+1), isDrawingLineColor, timeDisplayLineColor)) {
-                isNeededShuffle = true;
+              if(checkCanConnectWithPairPosition(listMatrixOfObjectSameType.at(x), listMatrixOfObjectSameType.at(x+1), isDrawingLineColor, timeDisplayLineColor)) {
+                hasPairObject = true;
                 break;
               }
             }
-            
-            if(xCount <= subPositionArraySamType.size() ||
-               isNeededShuffle == true) {
-              subPositionArraySamType.clear();
+            if(xCount <= listMatrixOfObjectSameType.size() || hasPairObject == true) {
+              listMatrixOfObjectSameType.clear();
               break;
             }
           }
           break;
         } else {
           count ++;
-          subPositionArraySamType.push_back(arraySampleValue_Clone.at(m)->getMatrixPosition());
+          listMatrixOfObjectSameType.push_back(listObjectSameType.at(m)->getMatrixPosition());
         }
       }
     }
     
-    if(isNeededShuffle == true || isLastArray == true) {
-      break;
-    }
+    if(hasPairObject == true || isLastArray == true) { break; }
   }
-  if(isNeededShuffle == false) {
+  
+  /*auto shuffle object when do not have pair */
+  if(hasPairObject == false) {
     std::vector<int> targetTypeArray;
-    if(!targetTypeArray.empty()) {
-      targetTypeArray.clear();
-    }
-    for (int i = 0; i < arraySampleValue.size(); i++) {
-      int type = arraySampleValue.at(i)->getTypeObject();
+    for (int i = 0; i < listObjectSameType.size(); i++) {
+      int type = listObjectSameType.at(i)->getTypeObject();
       targetTypeArray.push_back(type);
     }
     
-    for (int i = 0; i < arraySampleValue.size(); i ++) {
-      MainObject* objective = arraySampleValue.at(i);
+    for (int i = 0; i < listObjectSameType.size(); i ++) {
+      MainObject* objective = listObjectSameType.at(i);
       int newType = RandomBot::getInstance()->randomIndexFromVector(targetTypeArray);
       
       for (int j = 0; j < listObjects.size(); j++) {
@@ -324,6 +317,7 @@ void GameBoard::findPairObject(bool isDrawingLineColor, float timeDisplayLineCol
         }
       }
     }
+    findPairSuggestionObject(isDrawingLineColor, timeDisplayLineColor);
   }
 }
 

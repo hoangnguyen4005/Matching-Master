@@ -40,7 +40,7 @@ public:
   void swapTwoObject(const Vec2& pos1, const Vec2& pos2);
   void setObjectTypes(std::vector<int> array);
   
-  void findPairObject(bool isDrawingLineColor, float timeDisplayLineColor);
+  void findPairSuggestionObject(bool isDrawingLineColor, float timeDisplayLineColor);
   void setSuggestBotForGame(CheckPairBot* checkPairBot);
   bool checkCanConnectWithPairPosition(const Vec2& pos, const Vec2 &pos2, bool isDrawingLineColor, float timeDisplayLineColor);
   

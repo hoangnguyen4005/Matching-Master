@@ -68,6 +68,7 @@ bool GameScene::init() {
   checkPairBot->setDelegate(this);
   
   gameBoard->setSuggestBotForGame(checkPairBot);
+  gameBoard->findPairSuggestionObject(false, 0.0);
   
   this->createLayerStartGame();
   
@@ -128,7 +129,7 @@ void GameScene::onTouchEndGameScene(Touch* mTouch, Event* pEvent) {
             gameBoard->setHiddenObjects(posTouchOne, posTouchTwo);
             gameBoard->setDropTypeObject(dropObjectType);
             checkPairBot->setArrayValueVisible(gameBoard->getArrayValueObject());
-            gameBoard->findPairObject(false, 0.0);
+            gameBoard->findPairSuggestionObject(false, 0.0);
       
           }, TIME_DELAY_DRAW_LINE, "drop_object");
           
@@ -346,7 +347,7 @@ void GameScene::sendEventClickButton(int tag) {
     case TAG_BTN_SUGGEST:
       if(countSuggest > 0) {
         countSuggest--;
-        gameBoard->findPairObject(true, TIME_DELAY_DRAW_SUGGEST_LINE);
+        gameBoard->findPairSuggestionObject(true, TIME_DELAY_DRAW_SUGGEST_LINE);
       }
       if(countSuggest <= 0 ) { suggestButton->setDisable(); }
       suggestButton->setValueText(countSuggest);
