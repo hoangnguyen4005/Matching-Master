@@ -265,7 +265,7 @@ void GameScene::createProgressBarGameScene(int level) {
   loadingSprite->setPosition(Vec2(winSize.width*0.52, winSize.height - loadingSprite->getContentSize().height));
   this->addChild(loadingSprite);
   
-  progressBar = ProgressBarCustom::getInstanceProgress(100.0f, IDLE_PROGRESS);
+  progressBar = ProgressBarCustom::getInstanceProgress(TOTAL_TIME_PROGRESS_BAR, IDLE_PROGRESS);
   progressBar->createUIProgressBar(loadingSprite->getPosition());
   progressBar->setTimeUpdate(TIME_UPDATE_PROGRESS_BAR);
   progressBar->setDelegate(this);
@@ -392,12 +392,14 @@ void GameScene::drawerLine(const Point& p1,const Point& p2, const Point& p3, con
 
 void GameScene::randomLevelPlay(int level, RandomBot* randomBot) {
   if (level == 1) {
+    randomBot->createIndexes(4, 4);
+  } else if(level > 1 && level <= 3) {
     randomBot->createIndexes(3, 6);
-  } else if(level == 2) {
+  } else if(level > 3 && level <= 6) {
     randomBot->createIndexes(4, 5);
-  } else if(level >= 3 && level < 5) {
+  } else if(level > 6 && level <= 10) {
     randomBot->createIndexes(4, 6);
-  } else if(level >= 5 && level < 7) {
+  } else if(level > 10 && level <= 15) {
     randomBot->createIndexes(5, 6);
   } else {
     randomBot->createIndexes(6, 6);

@@ -51,7 +51,7 @@ void ProgressBarCustom::update(float dt) {
   
   if(loadingStatus == IDLE_PROGRESS) {
     float value = loadingBar->getPercent();
-    value  = value - updatePercent;
+    value = value - updatePercent;
     loadingBar->setPercent(value);
     if(value <= 0) {
       if(mDelegate){ mDelegate->endTime(); }
