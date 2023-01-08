@@ -10,10 +10,8 @@
 #define GameDefine_h
 
 typedef enum {
-  IDLE_PROGRESS = 1,
-  PAUSE_PROGRESS = 2,
-  ADDITION_TIME_PROGRESS = 3,
-  STOP = 4
+  RUNNING = 1,
+  PAUSE = 2,
 } STATUS_LOADING;
 
 typedef enum {
@@ -33,9 +31,9 @@ typedef enum{
 
 typedef enum {
   LINE  = 0,
-  Z_SHAPE = 1,
-  L_SHAPE = 2,
-  U_SHAPE = 3
+  Z_LINE = 1,
+  L_LINE = 2,
+  U_LINE = 3
 }DRAW_TYPE;
 
 typedef enum {
@@ -49,6 +47,7 @@ typedef enum {
 }TAG_POP_UP_BUTTON;
 
 typedef enum {
+  TAG_GAME_BOARD = 1400,
   TAG_POP_UP_BACK = 1401,
   TAG_POP_UP_WIN = 1402,
   TAG_POP_UP_GAME_OVER = 1403,
@@ -56,27 +55,27 @@ typedef enum {
   TAG_LAYER_START_GAME = 1405,
 }TAG_POPUP;
 
-#define MAX_WIDTH 14
-#define MAX_HEIGHT 7
+#define OUT_OF_GAME_BOARD_MATRIX Vec2(-1, -1)
 
-#define BUFFER_DRAW_Y 26
-#define BUFFER_DRAW_X 10
+#define TOTAL_ROW 17
+#define TOTAL_COLUMN 8
 
-#define WIDTH_DRAW_LINE 8.0
+#define THICKNESS_DRAW_LINE 6.0
 
-#define TOTAL_TIME_PROGRESS_BAR 100.0f
-#define ADD_TIME_PROGRESS_BAR 2.0f
-#define TIME_UPDATE_PROGRESS_BAR 0.02f
+#define TOTAL_PERCENT_PROGRESS_BAR 100.0f
+#define TOTAL_TIME_SECOND_PROGRESS_BAR 270
+#define AD_DURATION 10
 
 #define TIME_DELAY_DRAW_LINE 0.1f
 #define TIME_DELAY_DRAW_SUGGEST_LINE 0.8f
-#define TOTAL_OBJECT_IN_GAME 36
+#define TOTAL_RESOURCE_GAME 36
 
 #define X_AXIS 1
 #define Y_AXIS 2
 
-#define SHAPE_WIDTH 160
-#define SHAPE_HEIGHT 200
+#define SHAPE_WIDTH 132
+#define SHAPE_HEIGHT 158
+#define CHARACTER_SCALE 2.5
 
 #define HIDDEN_OBJECT 0
 #define VISIBLE_OBJECT 1

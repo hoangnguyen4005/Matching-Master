@@ -27,6 +27,7 @@
 		86591A582966BDD100BAAA70 /* libiconv.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 86591A572966BDD100BAAA70 /* libiconv.tbd */; };
 		86591A5A2966BDFE00BAAA70 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 86591A592966BDFE00BAAA70 /* UIKit.framework */; };
 		86591A5E2966BE2D00BAAA70 /* CoreText.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 86591A5D2966BE2D00BAAA70 /* CoreText.framework */; };
+		869E71E4296B51850058EAC3 /* RandomIndex.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 869E71E3296B51850058EAC3 /* RandomIndex.cpp */; };
 		BAB218281F192ABD0067DF4E /* background_progress_bar.png in Resources */ = {isa = PBXBuildFile; fileRef = BAB217FB1F192ABD0067DF4E /* background_progress_bar.png */; };
 		BAB218291F192ABD0067DF4E /* shapeBackground.png in Resources */ = {isa = PBXBuildFile; fileRef = BAB217FC1F192ABD0067DF4E /* shapeBackground.png */; };
 		BAB2182E1F192ABD0067DF4E /* badge.png in Resources */ = {isa = PBXBuildFile; fileRef = BAB218011F192ABD0067DF4E /* badge.png */; };
@@ -50,7 +51,6 @@
 		BAB218491F192ABD0067DF4E /* pausePopUp.png in Resources */ = {isa = PBXBuildFile; fileRef = BAB2181E1F192ABD0067DF4E /* pausePopUp.png */; };
 		BAB2184B1F192ABD0067DF4E /* winPopUp.png in Resources */ = {isa = PBXBuildFile; fileRef = BAB218201F192ABD0067DF4E /* winPopUp.png */; };
 		BAB218741F192ACA0067DF4E /* CheckPairBot.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BAB218551F192ACA0067DF4E /* CheckPairBot.cpp */; };
-		BAB218751F192ACA0067DF4E /* RandomBot.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BAB218571F192ACA0067DF4E /* RandomBot.cpp */; };
 		BAB218761F192ACA0067DF4E /* AndroidScene.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BAB218591F192ACA0067DF4E /* AndroidScene.cpp */; };
 		BAB218771F192ACA0067DF4E /* BaseObject.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BAB2185B1F192ACA0067DF4E /* BaseObject.cpp */; };
 		BAB218781F192ACA0067DF4E /* ButtonCustom.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BAB2185D1F192ACA0067DF4E /* ButtonCustom.cpp */; };
@@ -133,6 +133,8 @@
 		867BDC0A28BCE026006C4950 /* CoreMotion.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreMotion.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS15.0.sdk/System/Library/Frameworks/CoreMotion.framework; sourceTree = DEVELOPER_DIR; };
 		867BDC0C28BCE04A006C4950 /* libz.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libz.tbd; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS15.0.sdk/usr/lib/libz.tbd; sourceTree = DEVELOPER_DIR; };
 		867BDC0E28BCE06F006C4950 /* libiconv.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libiconv.tbd; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS15.0.sdk/usr/lib/libiconv.tbd; sourceTree = DEVELOPER_DIR; };
+		869E71E2296B51850058EAC3 /* RandomIndex.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RandomIndex.h; sourceTree = "<group>"; };
+		869E71E3296B51850058EAC3 /* RandomIndex.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = RandomIndex.cpp; sourceTree = "<group>"; };
 		86C30186296597BB00FDFEE0 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; name = Info.plist; path = ios/Info.plist; sourceTree = SOURCE_ROOT; };
 		86C301892965BFA800FDFEE0 /* HomeScene.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HomeScene.h; sourceTree = "<group>"; };
 		BAB217FB1F192ABD0067DF4E /* background_progress_bar.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = background_progress_bar.png; sourceTree = "<group>"; };
@@ -159,8 +161,6 @@
 		BAB218201F192ABD0067DF4E /* winPopUp.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = winPopUp.png; sourceTree = "<group>"; };
 		BAB218551F192ACA0067DF4E /* CheckPairBot.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = CheckPairBot.cpp; sourceTree = "<group>"; };
 		BAB218561F192ACA0067DF4E /* CheckPairBot.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CheckPairBot.h; sourceTree = "<group>"; };
-		BAB218571F192ACA0067DF4E /* RandomBot.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = RandomBot.cpp; sourceTree = "<group>"; };
-		BAB218581F192ACA0067DF4E /* RandomBot.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RandomBot.h; sourceTree = "<group>"; };
 		BAB218591F192ACA0067DF4E /* AndroidScene.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = AndroidScene.cpp; sourceTree = "<group>"; };
 		BAB2185A1F192ACA0067DF4E /* AndroidScene.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AndroidScene.h; sourceTree = "<group>"; };
 		BAB2185B1F192ACA0067DF4E /* BaseObject.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = BaseObject.cpp; sourceTree = "<group>"; };
@@ -363,10 +363,10 @@
 		BA2C6C051F1A279400735315 /* Bots */ = {
 			isa = PBXGroup;
 			children = (
+				869E71E2296B51850058EAC3 /* RandomIndex.h */,
+				869E71E3296B51850058EAC3 /* RandomIndex.cpp */,
 				BAB218561F192ACA0067DF4E /* CheckPairBot.h */,
 				BAB218551F192ACA0067DF4E /* CheckPairBot.cpp */,
-				BAB218581F192ACA0067DF4E /* RandomBot.h */,
-				BAB218571F192ACA0067DF4E /* RandomBot.cpp */,
 			);
 			name = Bots;
 			sourceTree = "<group>";
@@ -564,6 +564,7 @@
 				BAB2187D1F192ACA0067DF4E /* HomeScene.cpp in Sources */,
 				BAB218801F192ACA0067DF4E /* PopupGame.cpp in Sources */,
 				BAB2187A1F192ACA0067DF4E /* DrawLine.cpp in Sources */,
+				869E71E4296B51850058EAC3 /* RandomIndex.cpp in Sources */,
 				861FD7B32966C33A00469147 /* AdmobManager.cpp in Sources */,
 				BAB218741F192ACA0067DF4E /* CheckPairBot.cpp in Sources */,
 				BAB218781F192ACA0067DF4E /* ButtonCustom.cpp in Sources */,
@@ -571,7 +572,6 @@
 				503AE10217EB989F00D1A890 /* RootViewController.mm in Sources */,
 				BAB2187F1F192ACA0067DF4E /* MainObject.cpp in Sources */,
 				BAB2187C1F192ACA0067DF4E /* GameScene.cpp in Sources */,
-				BAB218751F192ACA0067DF4E /* RandomBot.cpp in Sources */,
 				503AE10117EB989F00D1A890 /* main.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

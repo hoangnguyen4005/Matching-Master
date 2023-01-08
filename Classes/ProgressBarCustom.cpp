@@ -11,34 +11,25 @@ ProgressBarCustom::ProgressBarCustom() {}
 
 ProgressBarCustom::~ProgressBarCustom() {}
 
-void ProgressBarCustom::createUIProgressBar(const Vec2& pos) {
+void ProgressBarCustom::createUIProgressBar() {
+  loadingStatus = PAUSE;
+  timeRemaining = TOTAL_TIME_SECOND_PROGRESS_BAR;
+  loadingSprite = Sprite::create("background_progress_bar.png");
+  loadingSprite->setPosition(Vec2::ZERO);
+  this->addChild(loadingSprite);
+  
   loadingBar = ui::LoadingBar::create("progress_bar.png");
-  loadingBar->setAnchorPoint(Vec2(0.5,0.5));
-  loadingBar->setPosition(pos);
-  loadingBar->setPercent(value);
+  loadingBar->setPosition(Vec2::ZERO);
+  loadingBar->setPercent(TOTAL_PERCENT_PROGRESS_BAR);
   loadingBar->setDirection(ui::LoadingBar::Direction::LEFT);
   this->setContentSize(loadingBar->getContentSize());
   this->addChild(loadingBar);
 }
 
-ProgressBarCustom* ProgressBarCustom::getInstanceProgress(int valueLoading, int status) {
-  ProgressBarCustom* object = new ProgressBarCustom();
-  object->setValue(valueLoading);
-  object->setStatus(status);
-  return object;
-}
-
-void ProgressBarCustom::setValue(float value) {
-  this->value = value;
-}
-
-float ProgressBarCustom::getValue() {
-  return value;
-}
-
 void ProgressBarCustom::onEnter() {
   Node::onEnter();
   this->scheduleUpdate();
+  this->schedule(schedule_selector(ProgressBarCustom::updateTimeRemaining), 1.0);
 }
 
 void ProgressBarCustom::onExit() {
@@ -47,28 +38,20 @@ void ProgressBarCustom::onExit() {
 }
 
 void ProgressBarCustom::update(float dt) {
-  if(loadingBar == NULL) { return; }
-  
-  if(loadingStatus == IDLE_PROGRESS) {
-    float value = loadingBar->getPercent();
-    value = value - updatePercent;
-    loadingBar->setPercent(value);
-    if(value <= 0) {
-      if(mDelegate){ mDelegate->endTime(); }
-      loadingStatus = STOP;
-    }
-  }
-  
-  if(loadingStatus == PAUSE_PROGRESS) {
-    float value = loadingBar->getPercent();
-    loadingBar->setPercent(value);
-  }
-  
-  if (loadingStatus == ADDITION_TIME_PROGRESS) {
-    float value = loadingBar->getPercent();
-    value += ADD_TIME_PROGRESS_BAR;
-    loadingBar->setPercent(value);
-    loadingStatus = IDLE_PROGRESS;
+  if(loadingBar == NULL || loadingStatus == PAUSE) { return; }
+  float percent = loadingBar->getPercent();
+  percent -= dt* TOTAL_PERCENT_PROGRESS_BAR/TOTAL_TIME_SECOND_PROGRESS_BAR;
+  loadingBar->setPercent(percent);
+}
+
+void ProgressBarCustom::updateTimeRemaining(float dt) {
+  if(loadingBar == NULL || loadingStatus == PAUSE) { return; }
+  timeRemaining -= dt;
+  if(timeRemaining <= 0) {
+    loadingStatus = PAUSE;
+    if(mDelegate){ mDelegate->endTime(); }
+  } else {
+    if(mDelegate){ mDelegate->receiveTimeRemainingFromProgressBar(timeRemaining); }
   }
 }
 
@@ -78,8 +61,4 @@ void ProgressBarCustom::setStatus(int status) {
 
 void ProgressBarCustom::setDelegate(DelegateProgress* delegate) {
   mDelegate = delegate;
-}
-
-void ProgressBarCustom::setTimeUpdate(float dt) {
-  updatePercent = dt;
 }

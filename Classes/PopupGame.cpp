@@ -28,7 +28,7 @@ void PopupGame::createPopupWithFileName(const char* fileButton, const Vec2& pos,
   temp->setPosition(pos);
   temp->setTag(tag);
   temp->addClickEventListener(CC_CALLBACK_1(PopupGame::handleClickPopup,this));
-  this->addChild(temp,100);
+  this->addChild(temp);
 }
 
 void PopupGame::createWithFileName(const char* fileName) {
@@ -38,7 +38,7 @@ void PopupGame::createWithFileName(const char* fileName) {
   
   Sprite* backgroundPopup = Sprite::create(fileName);
   backgroundPopup->setPosition(Vec2(Director::getInstance()->getWinSize().width/2, Director::getInstance()->getWinSize().height/2));
-  this->addChild(backgroundPopup,99);
+  this->addChild(backgroundPopup);
   sizePopup = backgroundPopup->getContentSize();
 }
 
@@ -56,5 +56,5 @@ void PopupGame::setDelegate(DelegateEventPopup* mDelegate) {
 }
 
 void PopupGame::setLabelPopup(Label* label) {
-  this->addChild(label,100);
+  this->addChild(label);
 }

@@ -17,12 +17,13 @@ MainObject::~MainObject() {}
 
 void MainObject::createUIObject() {
   backgroundSprite = Sprite::create("shapeBackground.png");
-  backgroundSprite->setPosition(this->getPosition());
+  Vec2 pos = Vec2(SHAPE_WIDTH/2.0, SHAPE_HEIGHT/2.0);
+  backgroundSprite->setPosition(pos);
   this->addChild(backgroundSprite);
   characterSprite = Sprite::createWithSpriteFrameName(imageNames[type]);
   
-  characterSprite->setPosition(this->getPosition());
-  characterSprite->setScale(3);
+  characterSprite->setPosition(pos);
+  characterSprite->setScale(CHARACTER_SCALE);
   this->addChild(characterSprite);
   if (valueVisible == VISIBLE_OBJECT) {
     characterSprite->setVisible(true);
@@ -63,12 +64,6 @@ void MainObject::backToNormalObject() {
 
 void MainObject::updateNewPosition(const Vec2& position) {
   this->setPosition(position);
-  if(backgroundSprite) {
-    backgroundSprite->setPosition(this->getPosition());
-  }
-  if(characterSprite) {
-    characterSprite->setPosition(this->getPosition());
-  }
 }
 
 void MainObject::setValueVisible(int valueVisible) {

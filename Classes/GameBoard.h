@@ -15,39 +15,38 @@
 USING_NS_CC;
 
 class GameBoard: public Layer {
+private:
+  Size size;
+  std::vector<int> getListTypeObject(std::vector<MainObject*> objects);
+  bool isTouchingInsideGameBoard(const Vec2& position);
 public:
   bool isPausing;
-  int widthMatrixGameBoard, heightMatrixGameBoard;
-  Scene* gameScene;
+  int widthMatrixGameBoard, heightMatrixGameBoard, dropType;
   std::vector<MainObject*> listObjects;
-  std::vector<int> indexes;
   CheckPairBot* checkPairBot;
 public:
-  GameBoard(int width, int height);
+  GameBoard(int width, int height, int dropType);
   virtual ~GameBoard();
-  void createGameBoard();
-  void initWithScene(Node* gameScene);
-  
-  Vec2 convertPosGameBoard(const Vec2& pos);
-  Vec2 getPositionScene(const Vec2& pos);
-  MainObject* getAtPosGameBoard(const Vec2& pos);
+  void createGameBoard(int level);
   
   std::vector<MainObject*> getArrayValueObject();
+  Vec2 convertMatrixGameBoard(const Vec2& touchLocation);
+  Vec2 getGameBoardPosition(const Vec2& matrix);
+  Vec2 convertDrawLinePosition(const Vec2& matrix);
+  MainObject* getAtPosGameBoard(const Vec2& pos);
   
   void setHiddenObjects(const Vec2& pos1, const Vec2& pos2);
-  void setDropTypeObject(int dropType);
+  void dropObjectInGameBoard();
   
   void swapTwoObject(const Vec2& pos1, const Vec2& pos2);
-  void setObjectTypes(std::vector<int> array);
-  
-  void findPairSuggestionObject(bool isDrawingLineColor, float timeDisplayLineColor);
+  void findPairConnectionObject(bool isDrawingLineColor, float timeDisplayLineColor);
   void setSuggestBotForGame(CheckPairBot* checkPairBot);
-  bool checkCanConnectWithPairPosition(const Vec2& pos, const Vec2 &pos2, bool isDrawingLineColor, float timeDisplayLineColor);
-  
-  bool isWinGameBoard();
+  bool hasPairConnection(const Vec2& pos, const Vec2 &pos2, bool isDrawingLineColor, float timeDisplayLineColor);
   void pauseGameBoard();
   void playGameBoard();
   void refreshGameBoard();
+  Size getRealContentSize();
+  std::vector<MainObject*> getCurrentListVisibleObject();
 };
 
 #endif /* GameBoard_h */
