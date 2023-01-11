@@ -18,7 +18,7 @@ void CheckPairBot::setWidthAndHeightMatrix(int width, int height) {
   this->height = height;
 }
 
-void CheckPairBot::setArrayValueVisible(const std::vector<MainObject*> &array) {
+void CheckPairBot::setListObject(const std::vector<MainObject*> &array) {
   listMainObject = array;
 }
 

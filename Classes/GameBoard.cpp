@@ -25,13 +25,13 @@ GameBoard::GameBoard(int width, int height, int dropType) {
   heightMatrixGameBoard = height;
   this->dropType = dropType;
   size = Size(width * SHAPE_WIDTH, height * SHAPE_HEIGHT);
-  if(!listObjects.empty()) { listObjects.clear(); }
+  if(!listObject.empty()) { listObject.clear(); }
 }
 
 GameBoard::~GameBoard() {}
 
-std::vector<MainObject*> GameBoard::getArrayValueObject() {
-  return listObjects;
+std::vector<MainObject*> GameBoard::getListObject() {
+  return listObject;
 }
 
 bool GameBoard::isTouchingInsideGameBoard(const Vec2& position) {
@@ -88,94 +88,114 @@ void GameBoard::createGameBoard(int level) {
       int tag = (j + (heightMatrixGameBoard - i)* widthMatrixGameBoard);
       object->setTagObject(tag);
       this->addChild(object, tag);
-      listObjects.push_back(object);
+      listObject.push_back(object);
     }
   }
 }
 
 
-MainObject* GameBoard::getAtPosGameBoard(const Vec2& pos) {
-  return listObjects.at(pos.x + pos.y*widthMatrixGameBoard);;
+MainObject* GameBoard::getAtPosGameBoard(const Vec2& matrix) {
+  int index = matrix.x + matrix.y*widthMatrixGameBoard;
+  if(index >= listObject.size()) { return nullptr; }
+  return listObject.at(index);
 }
 
 void GameBoard::setHiddenObjects(const Vec2& pos1, const Vec2& pos2) {
-  listObjects.at(pos1.x + pos1.y* widthMatrixGameBoard)->setValueVisible(HIDDEN_OBJECT);
-  listObjects.at(pos2.x + pos2.y* widthMatrixGameBoard)->setValueVisible(HIDDEN_OBJECT);
+  if(pos1.x + pos1.y* widthMatrixGameBoard < listObject.size()) {
+    listObject.at(pos1.x + pos1.y* widthMatrixGameBoard)->setValueVisible(HIDDEN_OBJECT);
+  }
+  if(pos2.x + pos2.y* widthMatrixGameBoard < listObject.size()) {
+    listObject.at(pos2.x + pos2.y* widthMatrixGameBoard)->setValueVisible(HIDDEN_OBJECT);
+  }
+}
+
+void GameBoard::dropLeft() {
+  for (int col = 1; col <= heightMatrixGameBoard-2; col++) {
+    int rightCount = 0;
+    for (int row = 1; row <= widthMatrixGameBoard-2; row++) {
+      MainObject* object = getAtPosGameBoard(Vec2(row, col));
+      if(object != nullptr && object->getValueVisible() == HIDDEN_OBJECT) {
+        rightCount ++;
+      } else {
+        if(rightCount > 0) {
+          int newRow = row - rightCount;
+          swapTwoObject(Vec2(newRow, col), Vec2(row,col));
+        }
+      }
+    }
+  }
+}
+
+void GameBoard::dropRight() {
+  for (int col = 1; col <= heightMatrixGameBoard-2; col++) {
+    int rightCount = 0;
+    for (int row = widthMatrixGameBoard - 2; row > 0; row--) {
+      MainObject* object = getAtPosGameBoard(Vec2(row, col));
+      if(object != nullptr && object->getValueVisible() == HIDDEN_OBJECT) {
+        rightCount ++;
+      } else {
+        if(rightCount > 0) {
+          int newRow = row + rightCount;
+          swapTwoObject(Vec2(newRow, col), Vec2(row,col));
+        }
+      }
+    }
+  }
+}
+
+void GameBoard::dropUp() {
+  for (int row = 1; row <= widthMatrixGameBoard-2; row ++ ) {
+    int upCount = 0;
+    for (int col = heightMatrixGameBoard - 2; col > 0 ; col--) {
+      MainObject* object = getAtPosGameBoard(Vec2(row, col));
+      if(object != nullptr && object->getValueVisible() == HIDDEN_OBJECT) {
+        upCount++;
+      } else {
+        if(upCount > 0) {
+          int newHeight = col + upCount;
+          swapTwoObject(Vec2(row, newHeight), Vec2(row, col));
+        }
+      }
+    }
+  }
+}
+
+void GameBoard::dropDown() {
+  for (int row = 1; row <= widthMatrixGameBoard-2; row++) {
+    int downCount = 0;
+    for (int col = 1; col <= heightMatrixGameBoard-2; col++) {
+      MainObject* object = getAtPosGameBoard(Vec2(row, col));
+      if(object != nullptr && object->getValueVisible() == HIDDEN_OBJECT) {
+        downCount ++;
+      } else {
+        if(downCount > 0) {
+          int newHeight = col - downCount;
+          swapTwoObject(Vec2(row, newHeight), Vec2(row, col));
+        }
+      }
+    }
+  }
 }
 
 void GameBoard::dropObjectInGameBoard() {
-  MainObject* object = nullptr;
-  if(dropType == DROP_LEFT) {
-    for (int col = 1; col <= heightMatrixGameBoard-2 ; col++) {
-      int rightCount = 0;
-      for (int row = 1 ; row <= widthMatrixGameBoard-2; row++) {
-        object = listObjects.at(row + col*widthMatrixGameBoard);
-        if(object->getValueVisible() == HIDDEN_OBJECT) {
-          rightCount ++;
-        } else {
-          if(rightCount > 0) {
-            int newRow = row - rightCount;
-            swapTwoObject(Vec2(newRow, col), Vec2(row,col));
-          }
-        }
-      }
-    }
-  }
-  
-  if(dropType == DROP_RIGHT) {
-    for (int col = 1; col <= heightMatrixGameBoard-2 ; col++) {
-      int rightCount = 0;
-      for (int row = widthMatrixGameBoard - 2 ; row > 0; row--) {
-        object = listObjects.at(row + col*widthMatrixGameBoard);
-        if(object->getValueVisible() == HIDDEN_OBJECT) {
-          rightCount ++;
-        }
-        else {
-          if(rightCount > 0) {
-            int newRow = row + rightCount;
-            swapTwoObject(Vec2(newRow, col), Vec2(row,col));
-          }
-        }
-      }
-    }
-    
-  }
-  if(dropType == DROP_UP) {
-    for (int row = 1 ; row <= widthMatrixGameBoard-2 ; row ++ ) {
-      int upCount = 0;
-      for (int col = heightMatrixGameBoard - 2; col > 0 ; col--) {
-        object = listObjects.at( row + col*widthMatrixGameBoard);
-        if(object->getValueVisible() == HIDDEN_OBJECT) {
-          upCount++;
-        } else {
-          if(upCount > 0) {
-            int newHeight = col + upCount;
-            swapTwoObject(Vec2(row, newHeight), Vec2(row, col));
-          }
-        }
-      }
-    }
-  }
-  if(dropType == DROP_DOWN) {
-    for (int row = 1 ; row <= widthMatrixGameBoard-2; row++) {
-      int downCount = 0;
-      for (int col = 1; col <= heightMatrixGameBoard-2; col++) {
-        object = listObjects.at(row + col*widthMatrixGameBoard);
-        if (object->getValueVisible() == HIDDEN_OBJECT) {
-          downCount ++;
-        }
-        else {
-          if(downCount > 0) {
-            int newHeight = col - downCount;
-            swapTwoObject(Vec2(row, newHeight), Vec2(row, col));
-          }
-        }
-      }
-    }
+  switch (dropType) {
+    case DROP_LEFT:
+      dropLeft();
+      break;
+    case DROP_RIGHT:
+      dropRight();
+      break;
+    case DROP_UP:
+      dropUp();
+      break;
+    case DROP_DOWN:
+      dropDown();
+      break;
+    default: break;
   }
 }
 
-void swapTag(int &a, int &b) {
+void GameBoard::swapTag(int &a, int &b) {
   int temp = a;
   a = b ;
   b = temp;
@@ -201,8 +221,12 @@ void GameBoard::swapTwoObject(const Vec2& pos1, const Vec2& pos2) {
     object2->setTagObject(b);
     object2->setLocalZOrder(b);
     
-    listObjects.at(pos1.x + pos1.y*widthMatrixGameBoard) = object2;
-    listObjects.at(pos2.x + pos2.y*widthMatrixGameBoard) = object1;
+    if(pos1.x + pos1.y*widthMatrixGameBoard < listObject.size()) {
+      listObject.at(pos1.x + pos1.y*widthMatrixGameBoard) = object2;
+    }
+    if(pos2.x + pos2.y*widthMatrixGameBoard < listObject.size()) {
+      listObject.at(pos2.x + pos2.y*widthMatrixGameBoard) = object1;
+    }
   }
 }
 
@@ -232,7 +256,7 @@ void GameBoard::findPairConnectionObject(bool isDrawingLineColor, float timeDisp
                                            isDrawingLineColor,
                                            timeDisplayLineColor)) {
           hasPairObject = true;
-          break;;
+          break;
         }
       }
     }
@@ -258,8 +282,10 @@ void GameBoard::pauseGameBoard() {
   isPausing  = true;
   for(int i = 0; i < widthMatrixGameBoard; i ++) {
     for (int j = 0; j < heightMatrixGameBoard; j++) {
-      MainObject* object = listObjects.at(i + j*widthMatrixGameBoard);
-      object->objectWhenPause();
+      MainObject* object = getAtPosGameBoard(Vec2(i, j));
+      if(object != nullptr) {
+        object->objectWhenPause();
+      }
     }
   }
 }
@@ -268,8 +294,10 @@ void GameBoard::playGameBoard() {
   isPausing = false;
   for(int i = 0; i < widthMatrixGameBoard; i ++) {
     for (int j = 0; j < heightMatrixGameBoard; j++) {
-      MainObject* object = listObjects.at(i + j*widthMatrixGameBoard);
-      object->objectWhenPlay();
+      MainObject* object = getAtPosGameBoard(Vec2(i, j));
+      if(object != nullptr) {
+        object->objectWhenPlay();
+      }
     }
   }
 }
@@ -287,17 +315,15 @@ void GameBoard::refreshGameBoard() {
     object->updateUI(newType);
     Vec2 matrix = object->getMatrixPosition();
     int index = matrix.x + matrix.y*widthMatrixGameBoard;
-    if(index >= 0 && index <= listObjects.size() - 1) {
-      listObjects.at(index) = object;
-    }
+    if(index >= 0 && index <= listObject.size() - 1) { listObject.at(index) = object; }
   }
 }
 
 std::vector<MainObject*> GameBoard::getCurrentListVisibleObject() {
   std::vector<MainObject*> result;
-  for (int i = 0; i < listObjects.size(); i++) {
-    if(listObjects.at(i)->getValueVisible() == VISIBLE_OBJECT) {
-      result.push_back(listObjects.at(i));
+  for (int i = 0; i < listObject.size(); i++) {
+    if(listObject.at(i)->getValueVisible() == VISIBLE_OBJECT) {
+      result.push_back(listObject.at(i));
     }
   }
   return result;

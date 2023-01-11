@@ -40,7 +40,7 @@ bool GameScene::init() {
 
   checkPairBot = new CheckPairBot();
   checkPairBot->setWidthAndHeightMatrix(TOTAL_ROW, TOTAL_COLUMN);
-  checkPairBot->setArrayValueVisible(gameBoard->getArrayValueObject());
+  checkPairBot->setListObject(gameBoard->getListObject());
   checkPairBot->setDelegate(this);
   
   gameBoard->setSuggestBotForGame(checkPairBot);
@@ -65,16 +65,16 @@ bool GameScene::onTouchBeginGameScene(Touch* mtouch, Event* pEvent) {
     if(countTouch < 2) {
       Vec2 pos = gameBoard->convertMatrixGameBoard(mtouch->getLocation());
       if(pos.x >= 1 && pos.x <= TOTAL_ROW-2 && pos.y >=1 && pos.y <= TOTAL_COLUMN-2) {
-        if(gameBoard->getAtPosGameBoard(pos)->getValueVisible() != HIDDEN_OBJECT) {
+        MainObject* object = gameBoard->getAtPosGameBoard(pos);
+        if(object == nullptr) { return false;}
+        if(object->getValueVisible() != HIDDEN_OBJECT) {
           if (pos.x == posTouchOne.x && pos.y == posTouchOne.y && countTouch == 1) {
-            MainObject* object = gameBoard->getAtPosGameBoard(pos);
             object->backToNormalObject();
             posTouchOne = OUT_OF_GAME_BOARD_MATRIX;
             countTouch = 0;
           } else {
             countTouch ++;
             if(countTouch %2 == 1) { posTouchOne = pos; }
-            MainObject* object = gameBoard->getAtPosGameBoard(pos);
             object->actionWhenClick();
             return true;
           }
@@ -92,6 +92,7 @@ void GameScene::onTouchEndGameScene(Touch* mTouch, Event* pEvent) {
       MyLine lineGame = checkPairBot->checkTwoPoint(posTouchOne, posTouchTwo, true, TIME_DELAY_DRAW_LINE);
       MainObject* object1 = gameBoard->getAtPosGameBoard(posTouchOne);
       MainObject* object2 = gameBoard->getAtPosGameBoard(posTouchTwo);
+      if(object1 == nullptr || object2 == nullptr) { return; }
       if (lineGame.isZeroLine()) {
         object1->backToNormalObject();
         object2->backToNormalObject();
@@ -102,7 +103,7 @@ void GameScene::onTouchEndGameScene(Touch* mTouch, Event* pEvent) {
             object2->effectWhenDieObject();
             gameBoard->setHiddenObjects(posTouchOne, posTouchTwo);
             gameBoard->dropObjectInGameBoard();
-            checkPairBot->setArrayValueVisible(gameBoard->getArrayValueObject());
+            checkPairBot->setListObject(gameBoard->getListObject());
             if(gameBoard->getCurrentListVisibleObject().empty()) {
               isPausing = true;
               this->createPopUpWin();
@@ -386,6 +387,7 @@ void GameScene::drawPairConnection(int drawType, int typeCoordinator, int result
   if(gameBoard == NULL) { return; }
   MainObject* object1 = gameBoard->getAtPosGameBoard(p1);
   MainObject* object2 = gameBoard->getAtPosGameBoard(p2);
+  if(object1 == nullptr || object2 == nullptr) { return; }
   if(object1->getTypeObject() == object2->getTypeObject()) {
     
     if(drawType == LINE) {

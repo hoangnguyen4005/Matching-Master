@@ -19,21 +19,26 @@ private:
   Size size;
   std::vector<int> getListTypeObject(std::vector<MainObject*> objects);
   bool isTouchingInsideGameBoard(const Vec2& position);
+  void dropLeft();
+  void dropRight();
+  void dropUp();
+  void dropDown();
+  void swapTag(int &a, int &b);
 public:
   bool isPausing;
   int widthMatrixGameBoard, heightMatrixGameBoard, dropType;
-  std::vector<MainObject*> listObjects;
+  std::vector<MainObject*> listObject;
   CheckPairBot* checkPairBot;
 public:
   GameBoard(int width, int height, int dropType);
   virtual ~GameBoard();
   void createGameBoard(int level);
   
-  std::vector<MainObject*> getArrayValueObject();
+  std::vector<MainObject*> getListObject();
   Vec2 convertMatrixGameBoard(const Vec2& touchLocation);
   Vec2 getGameBoardPosition(const Vec2& matrix);
   Vec2 convertDrawLinePosition(const Vec2& matrix);
-  MainObject* getAtPosGameBoard(const Vec2& pos);
+  MainObject* getAtPosGameBoard(const Vec2& matrix);
   
   void setHiddenObjects(const Vec2& pos1, const Vec2& pos2);
   void dropObjectInGameBoard();

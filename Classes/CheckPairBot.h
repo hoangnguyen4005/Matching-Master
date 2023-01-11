@@ -38,7 +38,7 @@ public:
   DelegateDrawer* delegate;
   CheckPairBot();
   virtual ~CheckPairBot();
-  void setArrayValueVisible(const std::vector<MainObject*> &array);
+  void setListObject(const std::vector<MainObject*> &array);
   void setWidthAndHeightMatrix(int width, int height);
   void setDelegate(DelegateDrawer* mDelegate);
   MyLine checkTwoPoint(Point p1, Point p2, bool isDrawingLineColor, float timeDisplayLineColor);

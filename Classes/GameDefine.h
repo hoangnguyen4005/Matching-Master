@@ -84,6 +84,6 @@ typedef enum {
 #define TITLE_GAME "Matching Master"
 
 #define OPEN_GAME_SCENE_KEY "OPEN_GAME_SCENE_KEY"
-#define OPEN_GAME_SCENE_FREQUENCY 6
+#define OPEN_GAME_SCENE_FREQUENCY 18
 
 #endif /* GameDefine_h */
